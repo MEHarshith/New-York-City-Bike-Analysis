@@ -1,6 +1,6 @@
 ---
-title: "Untitled"
-author: "Group Project"
+title: "CitiBikeDemand"
+author: "Harshith Reddy"
 date: "2024-05-22"
 output: html_document
 ---
@@ -278,3 +278,4 @@ predict(reg1, data.frame(DemandTime = "evening", StartStationId = "519", EndStat
 
 ```         
 ```
+
