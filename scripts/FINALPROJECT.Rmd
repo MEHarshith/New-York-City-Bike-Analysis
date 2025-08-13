@@ -1,0 +1,280 @@
+---
+title: "Untitled"
+author: "Group Project"
+date: "2024-05-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r}
+library(lubridate)
+#install.packages("visdat")
+library(dplyr)
+library(lubridate)
+library(visdat)
+library(ggplot2)
+citibikesDemand <- read.csv("C:/Users/reddy/Downloads/MGT DATA/citibikeDemand.csv")
+```
+
+```{r}
+#Exploring Data
+dim(citibikesDemand)
+str(citibikesDemand)
+colnames(citibikesDemand)
+head(citibikesDemand)
+tail(citibikesDemand)
+```
+
+```{r}
+citibikesDemand <- citibikesDemand %>%
+  mutate(
+    # Convert to factor
+    DemandTime = as.factor(DemandTime),
+    DayOfWeek = as.factor(DayOfWeek),
+    Month = as.factor(Month),
+    #StartStationName = as.factor(StartStationName),
+    StartNeighborhood = as.factor(StartNeighborhood),
+    EndStationName = as.factor(EndStationName),
+    EndNeighborhood = as.factor(EndNeighborhood),
+    # Convert to Date
+    DemandDate = as.Date(DemandDate, format = "%m/%d/%Y"),
+    # Impute missing values with column means
+    Temperature = ifelse(is.na(Temperature), mean(Temperature, na.rm = TRUE), Temperature),
+    DailySnowFall = ifelse(is.na(DailySnowFall), mean(DailySnowFall, na.rm = TRUE), DailySnowFall),
+    DailyPrecipitation = ifelse(is.na(DailyPrecipitation), mean(DailyPrecipitation, na.rm = TRUE), DailyPrecipitation),
+    Customer_prop = ifelse(is.na(Customer_prop), mean(Customer_prop, na.rm = TRUE), Customer_prop),
+    StartPerCapitaIncome = ifelse(is.na(StartPerCapitaIncome), mean(StartPerCapitaIncome, na.rm = TRUE), StartPerCapitaIncome),
+    StartPctHouseholdsNoVehicle = ifelse(is.na(StartPctHouseholdsNoVehicle), mean(StartPctHouseholdsNoVehicle, na.rm = TRUE), StartPctHouseholdsNoVehicle),
+    EndPerCapitaIncome = ifelse(is.na(EndPerCapitaIncome), mean(EndPerCapitaIncome, na.rm = TRUE), EndPerCapitaIncome),
+    EndPctHouseholdsNoVehicle = ifelse(is.na(EndPctHouseholdsNoVehicle), mean(EndPctHouseholdsNoVehicle, na.rm = TRUE), EndPctHouseholdsNoVehicle),
+    DemandYear = year(DemandDate) , 
+    DemandYear = as.factor(DemandYear) , 
+    DemandDay = day(DemandDate), 
+    DemandDay = as.factor(DemandDay)
+  ) %>%
+  # Filter by date range
+  filter(DemandDate >= as.Date("2017-06-01") & DemandDate <= as.Date("2018-05-31"))
+vis_miss(citibikesDemand)
+
+citibikesDemand %>% summarise_all(~sum(is.na(.)))
+```
+
+```{r}
+#Performing Descriptive Statistics 
+summary(citibikesDemand)
+#standard Deviations 
+sd(citibikesDemand$Demand)
+sd(citibikesDemand$Temperature)
+sd(citibikesDemand$DailySnowFall)
+sd(citibikesDemand$DailyPrecipitation)
+sd(citibikesDemand$Customer_prop)
+sd(citibikesDemand$StartPerCapitaIncome)
+sd(citibikesDemand$StartPctHouseholdsNoVehicle)
+sd(citibikesDemand$EndPerCapitaIncome)
+sd(citibikesDemand$EndPctHouseholdsNoVehicle)
+sd(citibikesDemand$TripDurationMinutes)
+sd(citibikesDemand$DistanceMiles)
+
+#performing co-relations
+cor(citibikesDemand$Demand,citibikesDemand$Temperature)
+cor(citibikesDemand$Demand,citibikesDemand$DailySnowFall)
+cor(citibikesDemand$Demand,citibikesDemand$DailyPrecipitation)
+cor(citibikesDemand$Demand,citibikesDemand$Customer_prop)
+cor(citibikesDemand$Demand,citibikesDemand$StartPerCapitaIncome)
+cor(citibikesDemand$Demand,citibikesDemand$StartPctHouseholdsNoVehicle)
+cor(citibikesDemand$Demand,citibikesDemand$EndPerCapitaIncome)
+cor(citibikesDemand$Demand,citibikesDemand$EndPctHouseholdsNoVehicle)
+cor(citibikesDemand$Demand,citibikesDemand$TripDurationMinutes)
+cor(citibikesDemand$Demand,citibikesDemand$DistanceMiles)
+
+
+```
+
+```{r}
+#performing visualizations 
+ggplot(citibikesDemand , aes(x = Month , y = Demand)) + geom_bar(stat = "identity")
+
+ggplot(citibikesDemand,aes(x = DayOfWeek, y = Demand))+  
+  geom_bar(stat = "identity")
+
+ggplot(citibikesDemand, aes(x = DemandTime , y = Demand)) + geom_bar(stat = "identity" , color = "black")
+
+ggplot(citibikesDemand, aes(Demand)) + geom_histogram()
+
+ggplot(citibikesDemand, aes(x=StartPctHouseholdsNoVehicle)) + geom_histogram()
+
+ggplot(citibikesDemand, aes(x=EndPctHouseholdsNoVehicle)) + geom_histogram()
+
+ggplot(citibikesDemand, aes(x=StartPerCapitaIncome)) + geom_histogram()
+
+ggplot(citibikesDemand, aes(x=EndPerCapitaIncome)) + geom_histogram()
+
+ggplot(citibikesDemand, mapping = aes(x = StartPerCapitaIncome, y = Demand )) + geom_point() + scale_x_log10()
+
+ggplot(citibikesDemand, mapping = aes(x = EndPerCapitaIncome, y = Demand )) + geom_point() + scale_x_log10()
+
+ggplot(citibikesDemand, mapping = aes(x = StartPctHouseholdsNoVehicle, y = Demand )) + geom_point() + scale_x_log10()
+
+ggplot(citibikesDemand, mapping = aes(x = EndPctHouseholdsNoVehicle, y = Demand )) + geom_point() + scale_x_log10()
+
+
+
+```
+
+```{r}
+# Forecast daytime and evening time demand for five stations of your choosing using a linear regression model 
+
+citibike_subsetdata <- citibikesDemand %>%
+  filter(StartStationId == 3255 | EndStationId == 3255 | 
+         StartStationId == 387 | EndStationId == 387 |
+         StartStationId == 497 | EndStationId == 497 |
+         StartStationId == 402 | EndStationId == 402 |
+         StartStationId == 519 | EndStationId == 519)
+
+reg1 <- lm(Demand ~ factor(DemandTime) + factor(StartStationId) + factor(EndStationId) + StartPerCapitaIncome, 
+           data = citibike_subsetdata)
+summary(reg1)
+```
+
+```{r}
+#morning interaction for the station 3255
+predict(reg1, data.frame(DemandTime = "daytime", StartStationId = "3255", EndStationId = "3255", StartPerCapitaIncome =86347))
+
+predict(reg1, data.frame(DemandTime = "daytime", StartStationId = "3255", EndStationId = "387", StartPerCapitaIncome = 86347))
+
+predict(reg1, data.frame(DemandTime = "daytime", StartStationId = "3255", EndStationId = "497", StartPerCapitaIncome = 86347))
+
+predict(reg1, data.frame(DemandTime = "daytime", StartStationId = "3255", EndStationId = "402", StartPerCapitaIncome = 86347))
+
+predict(reg1, data.frame(DemandTime = "daytime", StartStationId = "3255", EndStationId = "519", StartPerCapitaIncome = 86347))
+
+# morning interaction for station id 387
+predict(reg1, data.frame(DemandTime = "daytime", StartStationId = "387", EndStationId = "387", StartPerCapitaIncome = 166343))
+
+predict(reg1, data.frame(DemandTime = "daytime", StartStationId = "387", EndStationId = "3255", StartPerCapitaIncome = 166343))
+
+predict(reg1, data.frame(DemandTime = "daytime", StartStationId = "387", EndStationId = "497", StartPerCapitaIncome = 166343))
+
+predict(reg1, data.frame(DemandTime = "daytime", StartStationId = "387", EndStationId = "402", StartPerCapitaIncome = 166343))
+
+
+predict(reg1, data.frame(DemandTime = "daytime", StartStationId = "387", EndStationId = "519", StartPerCapitaIncome = 166343))
+
+## morning interaction for station id 497
+predict(reg1, data.frame(DemandTime = "daytime", StartStationId = "497", EndStationId = "497", StartPerCapitaIncome = 85199))
+
+predict(reg1, data.frame(DemandTime = "daytime", StartStationId = "497", EndStationId = "3255", StartPerCapitaIncome = 85199))
+
+predict(reg1, data.frame(DemandTime = "daytime", StartStationId = "497", EndStationId = "402", StartPerCapitaIncome = 85199))
+
+predict(reg1, data.frame(DemandTime = "daytime", StartStationId = "497", EndStationId = "519", StartPerCapitaIncome = 85199))
+
+
+## morning interaction for station id 402
+predict(reg1, data.frame(DemandTime = "daytime", StartStationId = "402", EndStationId = "402", StartPerCapitaIncome = 83240))
+
+predict(reg1, data.frame(DemandTime = "daytime", StartStationId = "402", EndStationId = "3255", StartPerCapitaIncome = 83240))
+
+predict(reg1, data.frame(DemandTime = "daytime", StartStationId = "402", EndStationId = "387", StartPerCapitaIncome = 83240))
+
+predict(reg1, data.frame(DemandTime = "daytime", StartStationId = "402", EndStationId = "497", StartPerCapitaIncome = 83240))
+
+predict(reg1, data.frame(DemandTime = "daytime", StartStationId = "402", EndStationId = "519", StartPerCapitaIncome = 83240))
+
+
+## morning interaction for station id 519
+predict(reg1, data.frame(DemandTime = "daytime", StartStationId = "519", EndStationId = "519", StartPerCapitaIncome = 86347))
+
+predict(reg1, data.frame(DemandTime = "daytime", StartStationId = "519", EndStationId = "3255", StartPerCapitaIncome = 86347))
+
+
+predict(reg1, data.frame(DemandTime = "daytime", StartStationId = "519", EndStationId = "387", StartPerCapitaIncome = 86347))
+
+predict(reg1, data.frame(DemandTime = "daytime", StartStationId = "519", EndStationId = "402", StartPerCapitaIncome = 86347))
+
+predict(reg1, data.frame(DemandTime = "daytime", StartStationId = "519", EndStationId = "497", StartPerCapitaIncome = 86347))
+
+#Evening interaction for the station 3255
+predict(reg1, data.frame(DemandTime = "evening", StartStationId = "3255", EndStationId = "3255", StartPerCapitaIncome =86347))
+
+predict(reg1, data.frame(DemandTime = "evening", StartStationId = "3255", EndStationId = "387", StartPerCapitaIncome = 86347))
+
+predict(reg1, data.frame(DemandTime = "evening", StartStationId = "3255", EndStationId = "402", StartPerCapitaIncome = 86347))
+
+predict(reg1, data.frame(DemandTime = "evening", StartStationId = "3255", EndStationId = "497", StartPerCapitaIncome = 86347))
+
+predict(reg1, data.frame(DemandTime = "evening", StartStationId = "3255", EndStationId = "519", StartPerCapitaIncome = 86347))
+
+# Evening interaction for station id 387
+predict(reg1, data.frame(DemandTime = "evening", StartStationId = "387", EndStationId = "387", StartPerCapitaIncome = 166343))
+
+predict(reg1, data.frame(DemandTime = "evening", StartStationId = "387", EndStationId = "3255", StartPerCapitaIncome = 166343))
+
+predict(reg1, data.frame(DemandTime = "evening", StartStationId = "387", EndStationId = "402", StartPerCapitaIncome = 166343))
+
+predict(reg1, data.frame(DemandTime = "evening", StartStationId = "387", EndStationId = "497", StartPerCapitaIncome = 166343))
+
+predict(reg1, data.frame(DemandTime = "evening", StartStationId = "387", EndStationId = "519", StartPerCapitaIncome = 166343))
+
+## Evening interaction for station id 497
+predict(reg1, data.frame(DemandTime = "evening", StartStationId = "497", EndStationId = "497", StartPerCapitaIncome = 85199))
+
+predict(reg1, data.frame(DemandTime = "evening", StartStationId = "497", EndStationId = "3255", StartPerCapitaIncome = 85199))
+
+predict(reg1, data.frame(DemandTime = "evening", StartStationId = "497", EndStationId = "387", StartPerCapitaIncome = 85199))
+
+predict(reg1, data.frame(DemandTime = "evening", StartStationId = "497", EndStationId = "402", StartPerCapitaIncome = 85199))
+
+predict(reg1, data.frame(DemandTime = "evening", StartStationId = "497", EndStationId = "519", StartPerCapitaIncome = 85199))
+
+## Evening interaction for station id 402
+predict(reg1, data.frame(DemandTime = "evening", StartStationId = "402", EndStationId = "402", StartPerCapitaIncome = 83240))
+
+predict(reg1, data.frame(DemandTime = "evening", StartStationId = "402", EndStationId = "3255", StartPerCapitaIncome = 83240))
+
+predict(reg1, data.frame(DemandTime = "evening", StartStationId = "402", EndStationId = "387", StartPerCapitaIncome = 83240))
+
+predict(reg1, data.frame(DemandTime = "evening", StartStationId = "402", EndStationId = "497", StartPerCapitaIncome = 83240))
+
+predict(reg1, data.frame(DemandTime = "evening", StartStationId = "402", EndStationId = "519", StartPerCapitaIncome = 83240))
+
+## Evening interaction for station id 519
+predict(reg1, data.frame(DemandTime = "evening", StartStationId = "519", EndStationId = "519", StartPerCapitaIncome = 86347))
+
+predict(reg1, data.frame(DemandTime = "evening", StartStationId = "519", EndStationId = "3255", StartPerCapitaIncome = 86347))
+
+predict(reg1, data.frame(DemandTime = "evening", StartStationId = "519", EndStationId = "387", StartPerCapitaIncome = 86347))
+
+predict(reg1, data.frame(DemandTime = "evening", StartStationId = "519", EndStationId = "402", StartPerCapitaIncome = 86347))
+
+predict(reg1, data.frame(DemandTime = "evening", StartStationId = "519", EndStationId = "497", StartPerCapitaIncome = 86347))
+
+
+
+```
+
+```         
+```
